@@ -10,13 +10,17 @@ de venda, compra ou retenção de cacau.
 | Cotação Seagri/Ilhéus | 215 | 02/01/2025 a 15/12/2025 |
 | Referência ICCO | 257 | 02/01/2025 a 31/12/2025 |
 | PTAX/BCB | 284 | 02/01/2025 a 17/07/2026 |
-| Clima | 0 | não carregado |
+| Clima (Open-Meteo, 4 localidades) | 124 | 19/06/2026 a 19/07/2026 |
 | Preço ao produtor/Conab | 0 | não carregado |
 | Produção municipal/IBGE | 0 | não carregado |
 | Custos de produção | 0 | não carregado |
 
-A base analítica possui 290 datas, mas somente 215 datas têm simultaneamente preço
+A base analítica possui 292 datas, mas somente 215 datas têm simultaneamente preço
 local, ICCO e PTAX. O período comum vai de 02/01/2025 a 15/12/2025.
+
+O clima disponível é reanálise e cobre apenas 31 dias para Gandu, Ilhéus, Kumasi e
+Daloa. Ele descreve condições passadas, mas ainda não pode ser usado para simular o
+conjunto de informações meteorológicas conhecido em previsões históricas.
 
 ## Estatísticas do período comum
 
@@ -59,7 +63,8 @@ o que torna as médias especialmente instáveis.
 
 1. ampliar o histórico local para mais anos ou documentar formalmente que a Seagri não
    os fornece;
-2. carregar e validar clima, produção municipal, preços da Conab e custos;
+2. ampliar e validar o backfill climático e carregar produção municipal, preços da
+   Conab e custos;
 3. confirmar os três movimentos extremos na fonte;
 4. manter a auditoria de `available_at`, agora preenchido para as séries existentes;
 5. definir calendário de mercado, tratamento de dias sem cotação e limite de
