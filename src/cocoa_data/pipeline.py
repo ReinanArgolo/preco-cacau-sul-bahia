@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import re
+import uuid
 from datetime import date, timedelta
 from typing import Iterable
 
@@ -71,12 +72,16 @@ class Pipeline:
         final = end or date.today()
         if start:
             return start, final
+        configured_start = self.settings.sources.get(source, {}).get("backfill_start")
+        if not configured_start:
+            raise ValueError(f"{source}: backfill_start não configurado")
+        initial = date.fromisoformat(configured_start)
         if mode == "backfill":
-            return date.fromisoformat(self.settings.sources[source]["backfill_start"]), final
+            return initial, final
         latest = self.repository.latest_date(source)
         if latest:
             return latest - timedelta(days=7), final
-        return max(final - timedelta(days=30), date.fromisoformat(self.settings.sources[source]["backfill_start"])), final
+        return max(final - timedelta(days=30), initial), final
 
     def run(
         self,
@@ -91,9 +96,10 @@ class Pipeline:
             if not acquired:
                 raise RuntimeError("Já existe uma coleta em execução")
             for source in sources:
-                period_start, period_end = self.resolve_period(source, mode, start, end)
-                run_id = self.repository.start_run(source, period_start, period_end)
+                run_id: uuid.UUID | None = None
                 try:
+                    period_start, period_end = self.resolve_period(source, mode, start, end)
+                    run_id = self.repository.start_run(source, period_start, period_end)
                     collector = COLLECTORS[source](self.settings)
                     batch = collector.collect(period_start, period_end)
                     self.repository.upsert_batch(batch)
@@ -114,19 +120,34 @@ class Pipeline:
                 except Exception as exc:
                     message = str(exc)
                     failures.append((source, message))
-                    self.repository.finish_run(run_id, "failed", error=message)
-                    self.repository.update_source_status(
-                        source=source,
-                        display_name=self.settings.sources[source].get("name", source.upper()),
-                        status="failed",
-                        essential=bool(self.settings.sources[source].get("essential", False)),
-                        latest_observation_date=self.repository.latest_date(source),
-                        row_count=0,
-                        message=sanitize_public_message(message),
-                    )
+                    config = self.settings.sources.get(source, {})
+                    if run_id is not None:
+                        try:
+                            self.repository.finish_run(run_id, "failed", error=message)
+                        except Exception:
+                            LOGGER.exception("Falha ao finalizar execução de %s", source)
+                    latest = None
+                    try:
+                        latest = self.repository.latest_date(source)
+                    except Exception:
+                        LOGGER.exception("Falha ao consultar cobertura de %s", source)
+                    try:
+                        self.repository.update_source_status(
+                            source=source,
+                            display_name=config.get("name", source.upper()),
+                            status="failed",
+                            essential=bool(config.get("essential", False)),
+                            latest_observation_date=latest,
+                            row_count=0,
+                            message=sanitize_public_message(message),
+                        )
+                    except Exception:
+                        LOGGER.exception("Falha ao persistir diagnóstico de %s", source)
                     LOGGER.exception("Falha em %s", source)
         essential_failures = [
-            item for item in failures if self.settings.sources[item[0]].get("essential", False)
+            item
+            for item in failures
+            if self.settings.sources.get(item[0], {}).get("essential", False)
         ]
         if essential_failures:
             raise EssentialSourceError(batches, essential_failures)
