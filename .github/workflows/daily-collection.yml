@@ -47,7 +47,7 @@ jobs:
           --quality-status data/reports/quality_status.json
       - name: Guardar diagnóstico
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: collection-status-${{ github.run_number }}
           path: |
