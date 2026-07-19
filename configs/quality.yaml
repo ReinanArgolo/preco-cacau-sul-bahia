@@ -1,0 +1,13 @@
+checks:
+  maximum_age_days:
+    seagri: 5
+    bcb: 5
+    icco: 5
+    weather: 10
+    conab: 100
+    ibge: 500
+  price_min_brl_arroba: 1
+  price_max_brl_arroba: 5000
+  ptax_min: 1
+  ptax_max: 20
+  allowed_weather_missing_ratio: 0.05

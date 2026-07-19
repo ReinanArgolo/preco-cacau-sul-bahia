@@ -1,0 +1,35 @@
+sources:
+  seagri:
+    enabled: true
+    essential: true
+    url: "https://www.ba.gov.br/seagri/cotacao"
+    backfill_start: "2000-01-01"
+  bcb:
+    enabled: true
+    essential: true
+    url: "https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata"
+    backfill_start: "1992-01-02"
+  icco:
+    enabled: true
+    essential: true
+    url: "https://www.icco.org/statistics/statistics_2025/"
+    backfill_start: "1994-10-03"
+  ice:
+    enabled: false
+    essential: false
+    reason: "A API e o histórico profissional da ICE exigem licença."
+  conab:
+    enabled: true
+    essential: false
+    prices_url: "https://sisdep.conab.gov.br/precosiagroweb/?page=programs.consultarSiagroPrecoMedioMensal"
+    costs_url: "https://www.gov.br/conab/pt-br/atuacao/informacoes-agropecuarias/custos-de-producao/arquivos-custo-de-producao/agricolas/serie-historica-custos-cacau-2012-a-2025.xlsx"
+  weather:
+    enabled: true
+    essential: false
+    url: "https://archive-api.open-meteo.com/v1/archive"
+    backfill_start: "1994-01-01"
+  ibge:
+    enabled: true
+    essential: false
+    url: "https://apisidra.ibge.gov.br/values/t/1613"
+    backfill_start: "1974-01-01"

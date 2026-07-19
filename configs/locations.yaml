@@ -1,0 +1,27 @@
+locations:
+  - id: gandu
+    name: Gandu
+    country: BR
+    latitude: -13.7441
+    longitude: -39.4867
+    timezone: America/Bahia
+    ibge_code: "2911204"
+  - id: ilheus
+    name: Ilhéus
+    country: BR
+    latitude: -14.7936
+    longitude: -39.0466
+    timezone: America/Bahia
+    ibge_code: "2913606"
+  - id: kumasi
+    name: Kumasi
+    country: GH
+    latitude: 6.6885
+    longitude: -1.6244
+    timezone: Africa/Accra
+  - id: daloa
+    name: Daloa
+    country: CI
+    latitude: 6.8774
+    longitude: -6.4502
+    timezone: Africa/Abidjan

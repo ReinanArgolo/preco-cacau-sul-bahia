@@ -1,0 +1,34 @@
+name: Dataset e relatório
+
+on:
+  workflow_run:
+    workflows: ["Coleta diária"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  report:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -e '.[analysis]'
+      - run: python -m cocoa_data build-analysis-dataset
+      - run: python -m cocoa_data render-report
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cocoa-analysis-${{ github.run_number }}
+          path: |
+            data/reports/
+            data/processed/dataset_summary.json
+          retention-days: 30
