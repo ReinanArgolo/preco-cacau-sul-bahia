@@ -19,6 +19,14 @@ def test_notebook_is_valid_json() -> None:
     assert "clima" in headings.lower()
     assert "produção municipal" in headings.lower()
 
+    code = "\n".join(
+        "".join(cell.get("source", []))
+        for cell in notebook["cells"]
+        if cell["cell_type"] == "code"
+    )
+    assert "comparable.duplicated()" in code
+    assert "isinstance(value, (dict, list))" in code
+
 
 def test_all_enabled_sources_have_collectors() -> None:
     from cocoa_data.pipeline import COLLECTORS
