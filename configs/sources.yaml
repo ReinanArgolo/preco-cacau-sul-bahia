@@ -23,6 +23,7 @@ sources:
     essential: false
     prices_url: "https://sisdep.conab.gov.br/precosiagroweb/?page=programs.consultarSiagroPrecoMedioMensal"
     costs_url: "https://www.gov.br/conab/pt-br/atuacao/informacoes-agropecuarias/custos-de-producao/arquivos-custo-de-producao/agricolas/serie-historica-custos-cacau-2012-a-2025.xlsx"
+    backfill_start: "2012-01-01"
   weather:
     enabled: true
     essential: false

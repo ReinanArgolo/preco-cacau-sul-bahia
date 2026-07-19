@@ -12,6 +12,22 @@ def issue_title(source: str) -> str:
     return f"Falha de coleta: {source}"
 
 
+def combined_failures(collection: dict, quality_events: list[dict]) -> dict[str, str]:
+    failures = {
+        item["source"]: item["message"]
+        for item in collection.get("failures", [])
+        if item.get("source") and item.get("message")
+    }
+    for event in quality_events:
+        if event.get("severity") != "error" or not event.get("source"):
+            continue
+        source = event["source"]
+        message = str(event.get("message") or event.get("check_name") or "Falha de qualidade")
+        previous = failures.get(source)
+        failures[source] = f"{previous}; {message}" if previous else message
+    return failures
+
+
 class GitHubIssues:
     def __init__(self, repository: str, token: str) -> None:
         self.base = f"https://api.github.com/repos/{repository}"
@@ -56,9 +72,13 @@ class GitHubIssues:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("status_file", type=Path)
+    parser.add_argument("--quality-status", type=Path)
     args = parser.parse_args()
     payload = json.loads(args.status_file.read_text(encoding="utf-8"))
-    failures = {item["source"]: item["message"] for item in payload.get("failures", [])}
+    quality_events = []
+    if args.quality_status and args.quality_status.exists():
+        quality_events = json.loads(args.quality_status.read_text(encoding="utf-8"))
+    failures = combined_failures(payload, quality_events)
     github = GitHubIssues(os.environ["GITHUB_REPOSITORY"], os.environ["GITHUB_TOKEN"])
     run_url = (
         f"https://github.com/{os.environ['GITHUB_REPOSITORY']}/actions/runs/"
@@ -66,7 +86,10 @@ def main() -> None:
     )
     for source, message in failures.items():
         github.report_failure(source, message, run_url)
-    for source in payload.get("sources", {}):
+    observed_sources = set(payload.get("sources", {})) | {
+        event["source"] for event in quality_events if event.get("source")
+    }
+    for source in observed_sources:
         if source not in failures:
             github.close_recovered(source)
 

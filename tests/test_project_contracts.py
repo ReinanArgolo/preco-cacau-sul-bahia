@@ -28,6 +28,12 @@ def test_all_enabled_sources_have_collectors() -> None:
     assert enabled <= set(COLLECTORS)
 
 
+def test_all_enabled_sources_have_a_reproducible_backfill_start() -> None:
+    config = yaml.safe_load((ROOT / "configs" / "sources.yaml").read_text(encoding="utf-8"))
+    enabled = [item for item in config["sources"].values() if item.get("enabled")]
+    assert all(item.get("backfill_start") for item in enabled)
+
+
 def test_supabase_schema_protects_every_public_table_with_rls() -> None:
     migration = (ROOT / "migrations" / "001_initial.sql").read_text(encoding="utf-8")
     tables = {

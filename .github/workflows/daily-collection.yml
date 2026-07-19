@@ -36,18 +36,23 @@ jobs:
       - name: Validar qualidade
         id: quality
         continue-on-error: true
-        run: python -m cocoa_data quality-check
+        run: python -m cocoa_data quality-check --status-file data/reports/quality_status.json
       - name: Sincronizar issues das fontes
         if: always() && hashFiles('data/reports/collection_status.json') != ''
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: python scripts/sync_collection_issues.py data/reports/collection_status.json
+        run: >-
+          python scripts/sync_collection_issues.py
+          data/reports/collection_status.json
+          --quality-status data/reports/quality_status.json
       - name: Guardar diagnóstico
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: collection-status-${{ github.run_number }}
-          path: data/reports/collection_status.json
+          path: |
+            data/reports/collection_status.json
+            data/reports/quality_status.json
           if-no-files-found: warn
           retention-days: 30
       - name: Reprovar execução degradada
